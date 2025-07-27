@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.css";
@@ -27,10 +26,8 @@ const LoginPage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // Store token in localStorage
       localStorage.setItem('token', data.token);
 
-      // Decode JWT to get user role
       const token = data.token;
       const base64Url = token.split(".")[1];
       const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -44,7 +41,6 @@ const LoginPage = () => {
       );
       const user = JSON.parse(jsonPayload);
 
-      // Redirect based on role
       if (user.role === "vendor") {
         navigate("/dashboard-vendor");
       } else if (user.role === "supplier") {
@@ -60,13 +56,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-bg">
-      <div className="login-container">
-        <div className="login-logo">
-          <span className="login-logo-icon"></span>
-          LOGO
-        </div>
-        <div className="login-title">Log in to your account</div>
+    <div className="login-page">
+      <div className="login-card">
+        <h2 className="login-title">Log in to your account</h2>
         <form className="login-form" onSubmit={handleLogin}>
           <label htmlFor="role">Login as</label>
           <select
@@ -102,10 +94,10 @@ const LoginPage = () => {
             autoComplete="current-password"
             required
           />
+          {error && <div className="error-msg">{error}</div>}
           <button className="login-btn" type="submit">
             Login
           </button>
-          {error && <div className="error-msg">{error}</div>}
         </form>
       </div>
     </div>

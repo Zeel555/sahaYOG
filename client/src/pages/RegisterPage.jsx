@@ -38,46 +38,56 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="register-container">
-      <h2>Register for SahaYOG</h2>
-      <form onSubmit={handleSubmit} className="register-form">
-        <label>Name</label>
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+    <div className="register-page">
+      <div className="register-card">
+        <h2 className="register-title">Register for SahaYOG</h2>
+        <form onSubmit={handleSubmit} className="register-form">
+          <label htmlFor="name">Name</label>
+          <input
+            id="name"
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
 
-        <label>Email</label>
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
 
-        <label>Password</label>
-        <input
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
 
-        <label>Role</label>
-        <select name="role" value={formData.role} onChange={handleChange}>
-          <option value="vendor">Vendor</option>
-          <option value="supplier">Supplier</option>
-        </select>
+          <label htmlFor="role">Role</label>
+          <select
+            id="role"
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+          >
+            <option value="vendor">Vendor</option>
+            <option value="supplier">Supplier</option>
+          </select>
 
-        {error && <p className="error-msg">{error}</p>}
+          {error && <p className="error-msg">{error}</p>}
 
-        <button type="submit">Register</button>
-      </form>
+          <button type="submit" className="register-btn">Register</button>
+        </form>
+      </div>
     </div>
   );
 };

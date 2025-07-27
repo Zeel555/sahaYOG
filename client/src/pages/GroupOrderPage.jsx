@@ -26,42 +26,66 @@ const GroupOrderPage = () => {
     alert(`Joining group order with id: ${id} (feature to be implemented)`);
   };
 
-  if (loading) return <p>Loading group orders...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) return (
+    <div className="page-container">
+      <div className="content-card">
+        <div className="loading-container">
+          <p>Loading group orders...</p>
+        </div>
+      </div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="page-container">
+      <div className="content-card">
+        <div className="error-container">
+          <p>Error: {error}</p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '1rem' }}>
-      <h2>Active Group Orders</h2>
-      {groupOrders.length === 0 ? (
-        <p>No active group orders available.</p>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem' }}>Items</th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem' }}>Quantity</th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem' }}>Deadline</th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem' }}>Delivery Area</th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem' }}>Vendors Joined</th>
-              <th style={{ borderBottom: '1px solid #ccc', padding: '0.5rem' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {groupOrders.map(order => (
-              <tr key={order._id}>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>{order.items}</td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>{order.quantity}</td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>{new Date(order.deadline).toLocaleString()}</td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>{order.deliveryArea}</td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>{order.vendorsJoined}</td>
-                <td style={{ borderBottom: '1px solid #eee', padding: '0.5rem' }}>
-                  <button onClick={() => joinGroupOrder(order._id)}>Join</button>
-                </td>
+    <div className="page-container">
+      <div className="content-card">
+        <h2 className="page-title">Active Group Orders</h2>
+        {groupOrders.length === 0 ? (
+          <p style={{ textAlign: 'center', color: '#e2e8f0' }}>No active group orders available.</p>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Items</th>
+                <th>Quantity</th>
+                <th>Deadline</th>
+                <th>Delivery Area</th>
+                <th>Vendors Joined</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {groupOrders.map(order => (
+                <tr key={order._id}>
+                  <td>{order.items}</td>
+                  <td>{order.quantity}</td>
+                  <td>{new Date(order.deadline).toLocaleString()}</td>
+                  <td>{order.deliveryArea}</td>
+                  <td>{order.vendorsJoined}</td>
+                  <td>
+                    <button 
+                      className="btn-secondary"
+                      onClick={() => joinGroupOrder(order._id)}
+                    >
+                      Join
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,16 +1,22 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
+import DashboardSupplier from "./pages/DashboardSupplier";
+import DashboardVendor from "./pages/DashboardVendor";
+import GroupOrderPage from "./pages/GroupOrderPage";
+import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import OrderTrackingPage from "./pages/OrderTrackingPage";
 import RegisterPage from "./pages/RegisterPage";
-import LandingPage from "./pages/LandingPage"; // ✅ Import added
-import DashboardVendor from "./pages/DashboardVendor"; // ✅ Import added
-import DashboardSupplier from "./pages/DashboardSupplier"; // ✅ Import added
+import ReviewPage from "./pages/ReviewPage";
+import SupplierListPage from "./pages/SupplierListPage";
 
-import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Header from "./components/Header";
 
 import './App.css';
+import './styles/shared.css';
 
 function App() {
   return (
@@ -51,6 +57,50 @@ function App() {
               <Footer />
             </>
           }
+        />
+        <Route
+          path="/group-orders"
+          element={
+            <>
+              <Header />
+              <GroupOrderPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/suppliers"
+          element={
+            <>
+              <Header />
+              <SupplierListPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/track-order"
+          element={
+            <>
+              <Header />
+              <OrderTrackingPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="/review"
+          element={
+            <>
+              <Header />
+              <ReviewPage />
+              <Footer />
+            </>
+          }
+        />
+        <Route
+          path="*"
+          element={<NotFoundPage />}
         />
       </Routes>
     </Router>

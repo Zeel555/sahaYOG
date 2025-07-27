@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const DashboardVendor = () => {
   const [filters, setFilters] = useState({
@@ -26,6 +26,13 @@ const DashboardVendor = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [joinQuantity, setJoinQuantity] = useState("");
   const [joiningGroupId, setJoiningGroupId] = useState(null);
+  const [overviewData, setOverviewData] = useState({
+    activeGroupOrders: 0,
+    pendingOrders: 0,
+    recentDeliveries: 0,
+    estimatedSavings: 0,
+    recentGroupOrders: []
+  });
 
   useEffect(() => {
     fetchSuppliers();
@@ -36,6 +43,7 @@ const DashboardVendor = () => {
     if (currentUser) {
       fetchMyGroups();
       fetchAvailableGroups();
+      fetchOverviewData();
     }
   }, [currentUser]);
 
@@ -124,6 +132,22 @@ const DashboardVendor = () => {
     }
   };
 
+  const fetchOverviewData = async () => {
+    try {
+      if (!currentUser || !currentUser.id) {
+        console.log("No current user, skipping overview fetch");
+        return;
+      }
+      const response = await fetch(`/api/grouporders/vendor-overview/${currentUser.id}`);
+      if (!response.ok) throw new Error("Failed to fetch overview data");
+      const data = await response.json();
+      setOverviewData(data);
+    } catch (error) {
+      console.error("Error fetching overview data:", error);
+      // Don't show alert for overview data as it's not critical
+    }
+  };
+
   useEffect(() => {
     let filtered = suppliersData;
 
@@ -203,6 +227,7 @@ const DashboardVendor = () => {
       // Refresh the groups
       fetchMyGroups();
       fetchAvailableGroups();
+      fetchOverviewData();
     } catch (error) {
       console.error("Error in handleGroupOrderSubmit:", error);
       alert(error.message);
@@ -273,6 +298,39 @@ const DashboardVendor = () => {
     }
   };
 
+  const handlePlaceGroupOrder = async (groupId) => {
+    if (!currentUser || !currentUser.id) {
+      alert("Please login to place a group order");
+      return;
+    }
+    if (!window.confirm("Are you sure you want to place this group order? This will create an order for suppliers.")) {
+      return;
+    }
+    try {
+      const response = await fetch(`/api/grouporders/${groupId}/place-order`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          creatorId: currentUser.id,
+          orderType: "group_order"
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to place group order");
+      }
+      alert("Group order placed successfully! Suppliers will now see this order.");
+      // Refresh the groups
+      fetchMyGroups();
+      fetchAvailableGroups();
+      fetchOverviewData();
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
@@ -283,26 +341,144 @@ const DashboardVendor = () => {
       case "Overview":
         return (
           <section>
-            <h2>Overview / Home</h2>
-            <p>Welcome message with vendor's name</p>
-            <ul>
-              <li>Active group orders</li>
-              <li>Pending orders</li>
-              <li>Recent deliveries</li>
-              <li>Money saved this month 💰 (optional gamification)</li>
-            </ul>
+            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>
+              Welcome back, {currentUser?.name || currentUser?.email || 'Vendor'}! 👋
+            </h2>
+            
+            {/* Overview Cards */}
+            <div className="card-grid" style={{ marginBottom: "30px" }}>
+              <div className="card-item" style={{ 
+                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                border: "none",
+                color: "#fff"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 10px 0", fontSize: "2rem", fontWeight: "bold" }}>
+                      {overviewData.activeGroupOrders}
+                    </h3>
+                    <p style={{ margin: 0, opacity: 0.9 }}>Active Group Orders</p>
+                  </div>
+                  <div style={{ fontSize: "2.5rem" }}>📋</div>
+                </div>
+              </div>
+
+              <div className="card-item" style={{ 
+                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                border: "none",
+                color: "#fff"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 10px 0", fontSize: "2rem", fontWeight: "bold" }}>
+                      {overviewData.pendingOrders}
+                    </h3>
+                    <p style={{ margin: 0, opacity: 0.9 }}>Pending Orders</p>
+                  </div>
+                  <div style={{ fontSize: "2.5rem" }}>⏳</div>
+                </div>
+              </div>
+
+              <div className="card-item" style={{ 
+                background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+                border: "none",
+                color: "#fff"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 10px 0", fontSize: "2rem", fontWeight: "bold" }}>
+                      {overviewData.recentDeliveries}
+                    </h3>
+                    <p style={{ margin: 0, opacity: 0.9 }}>Recent Deliveries</p>
+                  </div>
+                  <div style={{ fontSize: "2.5rem" }}>🚚</div>
+                </div>
+              </div>
+
+              <div className="card-item" style={{ 
+                background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+                border: "none",
+                color: "#fff"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 10px 0", fontSize: "2rem", fontWeight: "bold" }}>
+                      ${overviewData.estimatedSavings}
+                    </h3>
+                    <p style={{ margin: 0, opacity: 0.9 }}>Money Saved This Month 💰</p>
+                  </div>
+                  <div style={{ fontSize: "2.5rem" }}>💰</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Group Orders */}
+            <div style={{ marginTop: "30px" }}>
+              <h3 style={{ color: "#fff", marginBottom: "20px", fontSize: "1.3rem" }}>
+                Recent Group Orders
+              </h3>
+              {overviewData.recentGroupOrders.length === 0 ? (
+                <div style={{ 
+                  textAlign: "center", 
+                  padding: "40px", 
+                  backgroundColor: "#1e293b", 
+                  borderRadius: "8px",
+                  color: "#b0b8c9"
+                }}>
+                  <div style={{ fontSize: "3rem", marginBottom: "10px" }}>📦</div>
+                  <p>No group orders yet. Start creating your first group order!</p>
+                </div>
+              ) : (
+                <div className="card-grid">
+                  {overviewData.recentGroupOrders.map((order) => (
+                    <div key={order._id} className="card-item">
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
+                        <h4 style={{ color: "#fff", margin: 0, fontSize: "1.1rem" }}>
+                          {order.items}
+                        </h4>
+                        <span style={{ 
+                          padding: "4px 8px", 
+                          borderRadius: "4px", 
+                          fontSize: "0.8em",
+                          backgroundColor: order.status === "active" ? "#28a745" : 
+                                        order.status === "ordered" ? "#1e90ff" : 
+                                        order.status === "ongoing" ? "#ffa500" : 
+                                        order.status === "completed" ? "#43e97b" : "#6c757d",
+                          color: "#fff"
+                        }}>
+                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        </span>
+                      </div>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>
+                        <strong>Quantity:</strong> {order.totalQuantity} units
+                      </p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>
+                        <strong>Participants:</strong> {order.participants.length}
+                      </p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>
+                        <strong>Deadline:</strong> {new Date(order.deadline).toLocaleDateString()}
+                      </p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "0" }}>
+                        <strong>Created:</strong> {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </section>
         );
       case "Browse Suppliers":
         return (
           <section>
-            <h2>Browse Suppliers</h2>
-            <p>List of suppliers nearby or by category (vegetables, spices, packaging, etc.)</p>
+            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Browse Suppliers</h2>
+            <p style={{ color: "#b0b8c9", marginBottom: "20px" }}>List of suppliers nearby or by category (vegetables, spices, packaging, etc.)</p>
 
-            <div>
-              <h3>Filters:</h3>
-              <label>
-                Min Rating:
+            <div className="form-container" style={{ marginBottom: "30px" }}>
+              <h3 style={{ color: "#fff", marginBottom: "15px" }}>Filters:</h3>
+              <div className="form-grid">
+                <div className="input-group">
+                  <label>Min Rating:</label>
                 <input
                   type="number"
                   step="0.1"
@@ -311,9 +487,9 @@ const DashboardVendor = () => {
                   onChange={handleFilterChange}
                   placeholder="Enter min rating"
                 />
-              </label>
-              <label>
-                Delivery Time:
+                </div>
+                <div className="input-group">
+                  <label>Delivery Time:</label>
                 <select
                   name="deliveryTime"
                   value={filters.deliveryTime}
@@ -324,9 +500,9 @@ const DashboardVendor = () => {
                   <option value="2 days">2 days</option>
                   <option value="3 days">3 days</option>
                 </select>
-              </label>
-              <label>
-                Verified:
+                </div>
+                <div className="input-group">
+                  <label>Verified:</label>
                 <select
                   name="verified"
                   value={filters.verified}
@@ -336,46 +512,52 @@ const DashboardVendor = () => {
                   <option value="true">Verified</option>
                   <option value="false">Not Verified</option>
                 </select>
-              </label>
+                </div>
+              </div>
             </div>
 
             <div>
-              <h3>Supplier Profiles:</h3>
+              <h3 style={{ color: "#fff", marginBottom: "15px" }}>Supplier Profiles:</h3>
               {loading ? (
+                <div className="loading-container">
                 <p>Loading suppliers...</p>
+                </div>
               ) : error ? (
+                <div className="error-container">
                 <p>Error loading suppliers: {error}</p>
+                </div>
               ) : filteredSuppliers.length === 0 ? (
-                <p>No suppliers found. Please check back later.</p>
+                <p style={{ textAlign: "center", color: "#b0b8c9" }}>No suppliers found. Please check back later.</p>
               ) : (
-                filteredSuppliers.map((supplier) => (
-                  <div key={supplier.id} style={{ border: "1px solid #ccc", margin: "10px 0", padding: "10px" }}>
-                    <h4>{supplier.name} {supplier.verified ? "(Verified)" : ""}</h4>
-                    <p>Category: {supplier.category}</p>
-                    <p>Rating: {supplier.rating}</p>
-                    <p>Delivery Time: {supplier.deliveryTime}</p>
-                    <p>Price List: {supplier.priceList}</p>
-                    <p>Contact: {supplier.contact}</p>
+                <div className="card-grid">
+                  {filteredSuppliers.map((supplier) => (
+                    <div key={supplier.id} className="card-item">
+                      <h4 style={{ color: "#fff", marginBottom: "10px" }}>{supplier.name} {supplier.verified ? "(Verified)" : ""}</h4>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>Category: {supplier.category}</p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>Rating: {supplier.rating}</p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>Delivery Time: {supplier.deliveryTime}</p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "5px" }}>Price List: {supplier.priceList}</p>
+                      <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Contact: {supplier.contact}</p>
                     
                     {supplier.products && supplier.products.length > 0 && (
                       <div style={{ marginTop: "10px" }}>
-                        <h5>Products:</h5>
-                        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "5px" }}>
+                          <h5 style={{ color: "#fff", marginBottom: "10px" }}>Products:</h5>
+                          <table className="data-table">
                           <thead>
-                            <tr style={{ backgroundColor: "#f5f5f5" }}>
-                              <th style={{ border: "1px solid #ddd", padding: "5px", textAlign: "left" }}>Name</th>
-                              <th style={{ border: "1px solid #ddd", padding: "5px", textAlign: "left" }}>Price</th>
-                              <th style={{ border: "1px solid #ddd", padding: "5px", textAlign: "left" }}>Stock</th>
-                              <th style={{ border: "1px solid #ddd", padding: "5px", textAlign: "left" }}>Delivery</th>
+                              <tr>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Delivery</th>
                             </tr>
                           </thead>
                           <tbody>
                             {supplier.products.map((product) => (
                               <tr key={product._id}>
-                                <td style={{ border: "1px solid #ddd", padding: "5px" }}>{product.name}</td>
-                                <td style={{ border: "1px solid #ddd", padding: "5px" }}>${product.price}</td>
-                                <td style={{ border: "1px solid #ddd", padding: "5px" }}>{product.stock}</td>
-                                <td style={{ border: "1px solid #ddd", padding: "5px" }}>{product.delivery}</td>
+                                  <td>{product.name}</td>
+                                  <td>${product.price}</td>
+                                  <td>{product.stock}</td>
+                                  <td>{product.delivery}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -383,9 +565,10 @@ const DashboardVendor = () => {
                       </div>
                     )}
                     
-                    <button onClick={() => alert(`Added ${supplier.name} to favorites`)}>Add to favorites</button>
+                      <button className="btn-secondary" onClick={() => alert(`Added ${supplier.name} to favorites`)}>Add to favorites</button>
+                    </div>
+                  ))}
                   </div>
-                ))
               )}
             </div>
           </section>
@@ -393,15 +576,15 @@ const DashboardVendor = () => {
       case "Group Orders":
         return (
           <section>
-            <h2>Group Orders</h2>
+            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Group Orders</h2>
             
             {/* Create New Group Order */}
-            <div style={{ marginBottom: "2rem", padding: "1rem", border: "1px solid #ccc", borderRadius: "5px" }}>
-              <h3>Create New Group Order:</h3>
-              <form onSubmit={handleGroupOrderSubmit}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-                  <label>
-                    Item(s):
+            <div className="card-item" style={{ marginBottom: "30px" }}>
+              <h3 style={{ color: "#fff", marginBottom: "20px" }}>Create New Group Order:</h3>
+              <form className="form-container" onSubmit={handleGroupOrderSubmit}>
+                <div className="form-grid">
+                  <div className="input-group">
+                    <label>Item(s):</label>
                     <input
                       type="text"
                       name="items"
@@ -409,11 +592,10 @@ const DashboardVendor = () => {
                       onChange={handleGroupOrderChange}
                       placeholder="Enter items"
                       required
-                      style={{ width: "100%", padding: "0.5rem" }}
                     />
-                  </label>
-                  <label>
-                    Total Quantity (Bulk):
+                  </div>
+                  <div className="input-group">
+                    <label>Total Quantity (Bulk):</label>
                     <input
                       type="number"
                       name="totalQuantity"
@@ -421,11 +603,10 @@ const DashboardVendor = () => {
                       onChange={handleGroupOrderChange}
                       placeholder="Total quantity to buy"
                       required
-                      style={{ width: "100%", padding: "0.5rem" }}
                     />
-                  </label>
-                  <label>
-                    Your Quantity:
+                  </div>
+                  <div className="input-group">
+                    <label>Your Quantity:</label>
                     <input
                       type="number"
                       name="creatorQuantity"
@@ -433,22 +614,20 @@ const DashboardVendor = () => {
                       onChange={handleGroupOrderChange}
                       placeholder="How much you want"
                       required
-                      style={{ width: "100%", padding: "0.5rem" }}
                     />
-                  </label>
-                  <label>
-                    Deadline:
+                  </div>
+                  <div className="input-group">
+                    <label>Deadline:</label>
                     <input
                       type="date"
                       name="deadline"
                       value={groupOrderData.deadline}
                       onChange={handleGroupOrderChange}
                       required
-                      style={{ width: "100%", padding: "0.5rem" }}
                     />
-                  </label>
-                  <label>
-                    Max Participants:
+                  </div>
+                  <div className="input-group">
+                    <label>Max Participants:</label>
                     <input
                       type="number"
                       name="maxParticipants"
@@ -456,11 +635,10 @@ const DashboardVendor = () => {
                       onChange={handleGroupOrderChange}
                       min="2"
                       max="20"
-                      style={{ width: "100%", padding: "0.5rem" }}
                     />
-                  </label>
-                  <label style={{ gridColumn: "1 / -1" }}>
-                    Delivery Area:
+                  </div>
+                  <div className="input-group">
+                    <label>Delivery Area:</label>
                     <input
                       type="text"
                       name="deliveryArea"
@@ -468,50 +646,72 @@ const DashboardVendor = () => {
                       onChange={handleGroupOrderChange}
                       placeholder="Enter delivery area"
                       required
-                      style={{ width: "100%", padding: "0.5rem" }}
                     />
-                  </label>
+                  </div>
                 </div>
-                <button type="submit" style={{ padding: "0.5rem 1rem", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}>
+                <button type="submit" className="btn-primary">
                   Create New Group Order
                 </button>
               </form>
             </div>
 
             {/* My Groups */}
-            <div style={{ marginBottom: "2rem" }}>
-              <h3>My Groups (Created & Joined):</h3>
+            <div style={{ marginBottom: "30px" }}>
+              <h3 style={{ color: "#fff", marginBottom: "20px" }}>My Groups (Created & Joined):</h3>
               {myGroups.length === 0 ? (
-                <p>You haven't created or joined any group orders yet.</p>
+                <p style={{ color: "#b0b8c9", textAlign: "center" }}>You haven't created or joined any group orders yet.</p>
               ) : (
-                <div style={{ display: "grid", gap: "1rem" }}>
+                <div className="card-grid">
                   {myGroups.map((group) => {
                     const isCreator = group.creatorId?._id === currentUser?.id || group.creatorId === currentUser?.id;
                     return (
-                      <div key={group._id} style={{ border: "1px solid #ddd", padding: "1rem", borderRadius: "5px", backgroundColor: isCreator ? "#f9f9f9" : "#f0f8ff" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                          <h4 style={{ margin: 0 }}>
+                      <div key={group._id} className="card-item">
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                          <h4 style={{ color: "#fff", margin: 0 }}>
                             Items: {group.items}
-                            <span style={{ fontSize: "0.8em", color: isCreator ? "#007bff" : "#28a745", marginLeft: "10px" }}>
+                            <span style={{ fontSize: "0.8em", color: isCreator ? "#1e90ff" : "#43e97b", marginLeft: "10px" }}>
                               {isCreator ? "(Created by you)" : "(Joined)"}
                             </span>
                           </h4>
                           {isCreator && (
                             <button 
                               onClick={() => handleCancelGroup(group._id)}
-                              style={{ padding: "0.25rem 0.5rem", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                              className="btn-secondary"
+                              style={{ backgroundColor: "#dc3545" }}
                             >
                               Cancel
                             </button>
                           )}
                         </div>
-                        {!isCreator && <p><strong>Created by:</strong> {group.creatorId?.name || 'Unknown'}</p>}
-                        <p><strong>Total Quantity:</strong> {group.totalQuantity}</p>
-                        <p><strong>Allocated:</strong> {group.participants.reduce((sum, p) => sum + p.quantity, 0)}/{group.totalQuantity}</p>
-                        <p><strong>Deadline:</strong> {new Date(group.deadline).toLocaleDateString()}</p>
-                        <p><strong>Delivery Area:</strong> {group.deliveryArea}</p>
-                        <p><strong>Participants:</strong> {group.participants.length}/{group.maxParticipants}</p>
-                        <p><strong>Status:</strong> {group.status}</p>
+                        {!isCreator && <p style={{ color: "#b0b8c9", marginBottom: "10px" }}><strong>Created by:</strong> {group.creatorId?.name || 'Unknown'}</p>}
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Total Quantity:</strong> {group.totalQuantity}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Allocated:</strong> {group.participants.reduce((sum, p) => sum + p.quantity, 0)}/{group.totalQuantity}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Deadline:</strong> {new Date(group.deadline).toLocaleDateString()}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Delivery Area:</strong> {group.deliveryArea}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Participants:</strong> {group.participants.length}/{group.maxParticipants}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "10px" }}><strong>Status:</strong> {group.status}</p>
+                        
+                        {/* Show Place Order button when quantity is fulfilled and user is creator */}
+                        {isCreator && group.participants.reduce((sum, p) => sum + p.quantity, 0) >= group.totalQuantity && group.status === 'active' && (
+                          <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #43e97b" }}>
+                            <p style={{ color: "#43e97b", marginBottom: "10px", fontWeight: "bold" }}>✅ Group quantity fulfilled!</p>
+                            <button 
+                              onClick={() => handlePlaceGroupOrder(group._id)}
+                              className="btn-primary"
+                              style={{ width: "100%" }}
+                            >
+                              Place Order Now
+                            </button>
+                          </div>
+                        )}
+                        
+                        {/* Show status when order is placed */}
+                        {group.status === 'ordered' && (
+                          <div style={{ marginTop: "15px", padding: "10px", backgroundColor: "#1e293b", borderRadius: "8px", border: "1px solid #1e90ff" }}>
+                            <p style={{ color: "#1e90ff", marginBottom: "10px", fontWeight: "bold" }}>📦 Order Placed!</p>
+                            <p style={{ color: "#b0b8c9", fontSize: "0.9em" }}>Suppliers can now see this order</p>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -521,20 +721,20 @@ const DashboardVendor = () => {
 
             {/* Available Groups */}
             <div>
-              <h3>Available Groups to Join:</h3>
+              <h3 style={{ color: "#fff", marginBottom: "20px" }}>Available Groups to Join:</h3>
               {availableGroups.length === 0 ? (
-                <p>No group orders available to join at the moment.</p>
+                <p style={{ color: "#b0b8c9", textAlign: "center" }}>No group orders available to join at the moment.</p>
               ) : (
-                <div style={{ display: "grid", gap: "1rem" }}>
+                <div className="card-grid">
                   {availableGroups.map((group) => {
                     const totalAllocated = group.participants.reduce((sum, p) => sum + p.quantity, 0);
                     const remainingQuantity = group.totalQuantity - totalAllocated;
                     return (
-                      <div key={group._id} style={{ border: "1px solid #ddd", padding: "1rem", borderRadius: "5px", backgroundColor: "#f0f8ff" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                          <h4 style={{ margin: 0 }}>Items: {group.items}</h4>
+                      <div key={group._id} className="card-item">
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+                          <h4 style={{ color: "#fff", margin: 0 }}>Items: {group.items}</h4>
                           {joiningGroupId === group._id ? (
-                            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                               <input
                                 type="number"
                                 value={joinQuantity}
@@ -542,11 +742,19 @@ const DashboardVendor = () => {
                                 placeholder="Quantity"
                                 min="1"
                                 max={remainingQuantity}
-                                style={{ width: "80px", padding: "0.25rem" }}
+                                style={{ 
+                                  width: "80px", 
+                                  padding: "8px", 
+                                  background: "#1e293b", 
+                                  color: "#fff", 
+                                  border: "none", 
+                                  borderRadius: "4px" 
+                                }}
                               />
                               <button 
                                 onClick={() => handleJoinGroup(group._id)}
-                                style={{ padding: "0.25rem 0.5rem", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                                className="btn-secondary"
+                                style={{ backgroundColor: "#43e97b" }}
                               >
                                 Confirm
                               </button>
@@ -555,7 +763,8 @@ const DashboardVendor = () => {
                                   setJoiningGroupId(null);
                                   setJoinQuantity("");
                                 }}
-                                style={{ padding: "0.25rem 0.5rem", backgroundColor: "#6c757d", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                                className="btn-secondary"
+                                style={{ backgroundColor: "#6c757d" }}
                               >
                                 Cancel
                               </button>
@@ -563,19 +772,20 @@ const DashboardVendor = () => {
                           ) : (
                             <button 
                               onClick={() => setJoiningGroupId(group._id)}
-                              style={{ padding: "0.25rem 0.5rem", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                              className="btn-secondary"
+                              style={{ backgroundColor: "#43e97b" }}
                             >
                               Join
                             </button>
                           )}
                         </div>
-                        <p><strong>Created by:</strong> {group.creatorId?.name || 'Unknown'}</p>
-                        <p><strong>Total Quantity:</strong> {group.totalQuantity}</p>
-                        <p><strong>Available:</strong> {remainingQuantity} units</p>
-                        <p><strong>Deadline:</strong> {new Date(group.deadline).toLocaleDateString()}</p>
-                        <p><strong>Delivery Area:</strong> {group.deliveryArea}</p>
-                        <p><strong>Participants:</strong> {group.participants.length}/{group.maxParticipants}</p>
-                        <p><strong>Status:</strong> {group.status}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Created by:</strong> {group.creatorId?.name || 'Unknown'}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Total Quantity:</strong> {group.totalQuantity}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Available:</strong> {remainingQuantity} units</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Deadline:</strong> {new Date(group.deadline).toLocaleDateString()}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Delivery Area:</strong> {group.deliveryArea}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "5px" }}><strong>Participants:</strong> {group.participants.length}/{group.maxParticipants}</p>
+                        <p style={{ color: "#b0b8c9", marginBottom: "10px" }}><strong>Status:</strong> {group.status}</p>
                       </div>
                     );
                   })}
@@ -587,24 +797,24 @@ const DashboardVendor = () => {
       case "My Orders":
         return (
           <section>
-            <h2>My Orders</h2>
-            <p>All individual and group orders</p>
-            <p>Status tags:</p>
-            <ul>
+            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>My Orders</h2>
+            <p style={{ color: "#b0b8c9", marginBottom: "20px" }}>All individual and group orders</p>
+            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Status tags:</p>
+            <ul style={{ color: "#e2e8f0", lineHeight: "1.6", marginBottom: "20px" }}>
               <li>Ordered</li>
               <li>In transit</li>
               <li>Delivered</li>
               <li>Cancelled</li>
             </ul>
-            <p>Track delivery (if logistics integrated)</p>
-            <p>View invoice/download bill</p>
+            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Track delivery (if logistics integrated)</p>
+            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>View invoice/download bill</p>
           </section>
         );
       case "Reviews":
         return (
           <section>
-            <h2>Reviews & Ratings</h2>
-            <p>Rate recently received orders</p>
+            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Reviews & Ratings</h2>
+            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Rate recently received orders</p>
             <p>See average rating for suppliers you’ve used</p>
             <p>Report issues (e.g. wrong item, late delivery)</p>
           </section>
@@ -612,8 +822,8 @@ const DashboardVendor = () => {
       case "Settings":
         return (
           <section>
-            <h2>Settings</h2>
-            <p>Settings options here</p>
+            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Settings</h2>
+            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Settings options here</p>
           </section>
         );
       default:
@@ -622,31 +832,24 @@ const DashboardVendor = () => {
   };
 
   return (
-    <div style={{ display: "flex", maxWidth: "1200px", margin: "2rem auto" }}>
-      <button onClick={toggleSidebar} style={{ marginRight: "1rem" }}>
+    <div className="page-container">
+      <div className="dashboard-card">
+        <div style={{ display: "flex", gap: "20px", minHeight: "600px" }}>
+          <button 
+            onClick={toggleSidebar} 
+            className="btn-secondary"
+            style={{ marginBottom: "20px", alignSelf: "flex-start" }}
+          >
         {sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
       </button>
 
       {sidebarOpen && (
-        <nav style={{
-          width: "250px",
-          borderRight: "1px solid #ccc",
-          padding: "1rem",
-          boxSizing: "border-box"
-        }}>
-          <ul style={{ listStyleType: "none", padding: 0 }}>
+            <nav className="sidebar" style={{ width: "250px", flexShrink: 0 }}>
+              <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
             {["Overview", "Browse Suppliers", "Group Orders", "My Orders", "Reviews", "Settings"].map((tab) => (
               <li
                 key={tab}
-                style={{
-                  padding: "10px",
-                  cursor: "pointer",
-                  backgroundColor: activeTab === tab ? "#2f4f6f" : "transparent",
-                  color: activeTab === tab ? "white" : "black",
-                  fontWeight: activeTab === tab ? "bold" : "normal",
-                  marginBottom: "5px",
-                  borderRadius: "4px"
-                }}
+                    className={`sidebar-item ${activeTab === tab ? 'active' : ''}`}
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
@@ -656,28 +859,23 @@ const DashboardVendor = () => {
         </nav>
       )}
 
-      <main style={{ flexGrow: 1, padding: "1rem" }}>
+          <main style={{ flexGrow: 1 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-          <h1>Vendor Dashboard</h1>
+              <h1 className="page-title" style={{ margin: 0 }}>Vendor Dashboard</h1>
           {currentUser && (
             <div style={{ textAlign: "right" }}>
-              <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold", color: "#2f4f6f" }}>
+                  <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold", color: "#fff" }}>
                 Welcome, {currentUser.name || currentUser.email}!
               </p>
-              <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
+                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#b0b8c9" }}>
                 Role: {currentUser.role}
               </p>
               <button 
                 onClick={handleLogout}
+                    className="btn-secondary"
                 style={{ 
                   marginTop: "0.5rem", 
-                  padding: "0.5rem 1rem", 
-                  backgroundColor: "#dc3545", 
-                  color: "white", 
-                  border: "none", 
-                  borderRadius: "3px", 
-                  cursor: "pointer",
-                  fontSize: "0.9rem"
+                      backgroundColor: "#dc3545"
                 }}
               >
                 Logout
@@ -687,6 +885,8 @@ const DashboardVendor = () => {
         </div>
         {renderMainPanel()}
       </main>
+        </div>
+      </div>
     </div>
   );
 };

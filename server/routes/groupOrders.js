@@ -215,6 +215,220 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// POST /api/grouporders/:id/place-order - place a group order (make it available to suppliers)
+router.post('/:id/place-order', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { creatorId, orderType } = req.body;
+    
+    if (!creatorId) {
+      return res.status(400).json({ message: 'Creator ID is required' });
+    }
+    
+    const groupOrder = await GroupOrder.findById(id);
+    if (!groupOrder) {
+      return res.status(404).json({ message: 'Group order not found' });
+    }
+    
+    if (groupOrder.creatorId.toString() !== creatorId) {
+      return res.status(403).json({ message: 'Only creator can place the group order' });
+    }
+    
+    // Check if quantity is fulfilled
+    const totalAllocated = groupOrder.participants.reduce((sum, p) => sum + p.quantity, 0);
+    if (totalAllocated < groupOrder.totalQuantity) {
+      return res.status(400).json({ 
+        message: `Cannot place order. Only ${totalAllocated}/${groupOrder.totalQuantity} units allocated.` 
+      });
+    }
+    
+    // Update status to 'ordered' to make it visible to suppliers
+    groupOrder.status = 'ordered';
+    groupOrder.orderType = orderType || 'group_order';
+    groupOrder.orderedAt = new Date();
+    await groupOrder.save();
+    
+    res.json({ message: 'Group order placed successfully', groupOrder });
+  } catch (error) {
+    console.error('Error placing group order:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/grouporders/supplier/:supplierId - get group orders for suppliers
+router.get('/supplier/:supplierId', async (req, res) => {
+  try {
+    const { supplierId } = req.params;
+    
+    // Get group orders that have been placed (status: 'ordered')
+    const groupOrders = await GroupOrder.find({ 
+      status: 'ordered',
+      orderType: 'group_order'
+    })
+    .populate('creatorId', 'name email')
+    .populate('participants.userId', 'name email')
+    .sort({ orderedAt: -1 });
+    
+    res.json(groupOrders);
+  } catch (error) {
+    console.error('Error fetching supplier group orders:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// PUT /api/grouporders/:id/status - update group order status (for suppliers)
+router.put('/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, supplierId } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+    
+    const groupOrder = await GroupOrder.findById(id);
+    if (!groupOrder) {
+      return res.status(404).json({ message: 'Group order not found' });
+    }
+    
+    // Update status
+    groupOrder.status = status;
+    if (supplierId) {
+      groupOrder.supplierId = supplierId;
+    }
+    
+    // If status is being changed to 'ongoing', mark as accepted
+    if (status === 'ongoing' && supplierId) {
+      groupOrder.acceptedAt = new Date();
+    }
+    
+    groupOrder.updatedAt = new Date();
+    await groupOrder.save();
+    
+    res.json({ message: 'Group order status updated successfully', groupOrder });
+  } catch (error) {
+    console.error('Error updating group order status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST /api/grouporders/:id/mark-read - mark order as read by supplier
+router.post('/:id/mark-read', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { supplierId } = req.body;
+    
+    if (!supplierId) {
+      return res.status(400).json({ message: 'Supplier ID is required' });
+    }
+    
+    const groupOrder = await GroupOrder.findById(id);
+    if (!groupOrder) {
+      return res.status(404).json({ message: 'Group order not found' });
+    }
+    
+    // Check if supplier has already read this order
+    const alreadyRead = groupOrder.readBySuppliers.some(read => 
+      read.supplierId.toString() === supplierId
+    );
+    
+    if (!alreadyRead) {
+      groupOrder.readBySuppliers.push({
+        supplierId: supplierId,
+        readAt: new Date()
+      });
+      await groupOrder.save();
+    }
+    
+    res.json({ message: 'Order marked as read successfully' });
+  } catch (error) {
+    console.error('Error marking order as read:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/grouporders/accepted/:supplierId - get accepted orders for supplier
+router.get('/accepted/:supplierId', async (req, res) => {
+  try {
+    const { supplierId } = req.params;
+    
+    // Get orders that have been accepted by this supplier
+    const acceptedOrders = await GroupOrder.find({ 
+      supplierId: supplierId,
+      status: { $in: ['ongoing', 'completed'] }
+    })
+    .populate('creatorId', 'name email')
+    .populate('participants.userId', 'name email')
+    .sort({ acceptedAt: -1 });
+    
+    res.json(acceptedOrders);
+  } catch (error) {
+    console.error('Error fetching accepted orders:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/grouporders/vendor-overview/:vendorId - get vendor overview data
+router.get('/vendor-overview/:vendorId', async (req, res) => {
+  try {
+    const { vendorId } = req.params;
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Active group orders (where vendor is creator and status is active)
+    const activeGroupOrders = await GroupOrder.find({
+      creatorId: vendorId,
+      status: 'active',
+      deadline: { $gt: now }
+    }).countDocuments();
+    
+    // Pending orders (where vendor is creator and status is ordered)
+    const pendingOrders = await GroupOrder.find({
+      creatorId: vendorId,
+      status: 'ordered'
+    }).countDocuments();
+    
+    // Recent deliveries (completed orders in last 30 days)
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentDeliveries = await GroupOrder.find({
+      creatorId: vendorId,
+      status: 'completed',
+      updatedAt: { $gte: thirtyDaysAgo }
+    }).countDocuments();
+    
+    // Money saved calculation (estimated based on group orders)
+    const completedOrdersThisMonth = await GroupOrder.find({
+      creatorId: vendorId,
+      status: 'completed',
+      updatedAt: { $gte: startOfMonth }
+    });
+    
+    // Calculate estimated savings (assuming 20% savings on group orders)
+    const totalQuantityThisMonth = completedOrdersThisMonth.reduce((sum, order) => sum + order.totalQuantity, 0);
+    const estimatedSavings = Math.round(totalQuantityThisMonth * 0.2 * 10); // Assuming $10 per unit savings
+    
+    // Recent group orders for display
+    const recentGroupOrders = await GroupOrder.find({
+      creatorId: vendorId,
+      status: { $in: ['active', 'ordered', 'ongoing', 'completed'] }
+    })
+    .populate('participants.userId', 'name email')
+    .sort({ createdAt: -1 })
+    .limit(5);
+    
+    res.json({
+      activeGroupOrders,
+      pendingOrders,
+      recentDeliveries,
+      estimatedSavings,
+      recentGroupOrders
+    });
+  } catch (error) {
+    console.error('Error fetching vendor overview:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // GET /api/grouporders/all - get all groups (for testing)
 router.get('/all', async (req, res) => {
   try {
