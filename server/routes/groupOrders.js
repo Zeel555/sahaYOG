@@ -76,7 +76,8 @@ router.get('/my-groups/:userId', async (req, res) => {
     const myGroups = await GroupOrder.find({ 
       $or: [
         { creatorId: userId },
-        { 'participants.userId': userId }
+        { 'participants.userId': userId },
+        { supplierId: userId }
       ],
       deadline: { $gt: now },
       status: 'active'

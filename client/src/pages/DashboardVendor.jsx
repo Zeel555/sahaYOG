@@ -798,16 +798,21 @@ const DashboardVendor = () => {
         return (
           <section>
             <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>My Orders</h2>
-            <p style={{ color: "#b0b8c9", marginBottom: "20px" }}>All individual and group orders</p>
-            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Status tags:</p>
-            <ul style={{ color: "#e2e8f0", lineHeight: "1.6", marginBottom: "20px" }}>
-              <li>Ordered</li>
-              <li>In transit</li>
-              <li>Delivered</li>
-              <li>Cancelled</li>
-            </ul>
-            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Track delivery (if logistics integrated)</p>
-            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>View invoice/download bill</p>
+            {myGroups.length === 0 ? (
+              <p style={{ color: "#b0b8c9" }}>No orders found.</p>
+            ) : (
+              <div>
+                {myGroups.map(order => (
+                  <div key={order._id} style={{ background: "#222", margin: "10px 0", padding: "15px", borderRadius: "8px" }}>
+                    <div><b>Items:</b> {order.items}</div>
+                    <div><b>Status:</b> {order.status}</div>
+                    <div><b>Deadline:</b> {new Date(order.deadline).toLocaleString()}</div>
+                    <div><b>Type:</b> {order.orderType}</div>
+                    {/* Add more fields as needed */}
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         );
       case "Reviews":
