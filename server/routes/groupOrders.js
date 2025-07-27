@@ -78,12 +78,11 @@ router.get('/my-groups/:userId', async (req, res) => {
         { creatorId: userId },
         { 'participants.userId': userId },
         { supplierId: userId }
-      ],
-      deadline: { $gt: now },
-      status: 'active'
+      ]
     })
     .populate('creatorId', 'name email')
     .populate('participants.userId', 'name email')
+    .populate('supplierId', 'name email')
     .sort({ deadline: 1 });
     
     res.json(myGroups);

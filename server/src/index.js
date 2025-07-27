@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const routes = require('../routes');
+const reviewRoutes = require('../routes/reviews');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,6 +24,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes
 app.use('/api', routes);
+app.use('/api/reviews', reviewRoutes);
 
 // Start the server
 app.listen(PORT, () => {

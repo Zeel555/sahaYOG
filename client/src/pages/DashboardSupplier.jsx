@@ -582,9 +582,8 @@ const DashboardSupplier = () => {
   };
 
   return (
-    <div className="page-container">
-      <div className="dashboard-card">
-        <div style={{ display: "flex", gap: "20px", minHeight: "600px" }}>
+    <div style={{ minHeight: '100vh', width: '100vw', background: 'radial-gradient(circle at 70% 20%, #1e90ff 0%, #0a1833 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0, padding: 0, overflowX: 'hidden' }}>
+      <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', background: '#101828', borderRadius: '12px', boxShadow: '0 8px 40px rgba(30, 144, 255, 0.15)', color: '#fff', boxSizing: 'border-box', padding: '40px 30px', minHeight: '600px', display: 'flex', gap: '20px' }}>
           <nav className="sidebar" style={{ width: "250px", flexShrink: 0 }}>
             <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
               {["Dashboard", "Product Listings", "Orders", "Accepted Orders", "Ratings", "Analytics", "Settings", "Help"].map((tab) => (
@@ -625,9 +624,8 @@ const DashboardSupplier = () => {
         </div>
         {renderMainPanel()}
       </main>
-        </div>
-      </div>
     </div>
+  </div>
   );
 };
 

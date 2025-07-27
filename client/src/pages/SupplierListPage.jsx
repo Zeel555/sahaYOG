@@ -55,7 +55,7 @@ const SupplierListPage = () => {
 
   if (loading) {
     return (
-      <div className="page-container">
+      <div style={{ minHeight: '100vh', width: '100vw', background: 'radial-gradient(circle at 70% 20%, #1e90ff 0%, #0a1833 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0, padding: 0, overflowX: 'hidden' }}>
         <div className="content-card">
           <div className="loading-container">
             <p>Loading suppliers...</p>
@@ -67,7 +67,7 @@ const SupplierListPage = () => {
 
   if (error) {
     return (
-      <div className="page-container">
+      <div style={{ minHeight: '100vh', width: '100vw', background: 'radial-gradient(circle at 70% 20%, #1e90ff 0%, #0a1833 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0, padding: 0, overflowX: 'hidden' }}>
         <div className="content-card">
           <div className="error-container">
             <p>Error: {error}</p>
@@ -78,7 +78,7 @@ const SupplierListPage = () => {
   }
 
   return (
-    <div className="page-container">
+    <div style={{ minHeight: '100vh', width: '100vw', background: 'radial-gradient(circle at 70% 20%, #1e90ff 0%, #0a1833 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: 0, padding: 0, overflowX: 'hidden' }}>
       <div className="content-card">
         <h1 className="page-title">Suppliers</h1>
         

@@ -1,5 +1,67 @@
 import React, { useEffect, useState } from "react";
 
+function ReviewForm({ order, currentUser }) {
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: order._id,
+          supplierId: order.supplierId,
+          vendorId: currentUser.id,
+          rating,
+          comment,
+        }),
+      });
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        const data = await res.json();
+        setError(data.message || "Failed to submit review");
+      }
+    } catch (err) {
+      setError("Network error");
+    }
+  };
+
+  if (submitted) return <div style={{ color: "lightgreen", marginTop: 8 }}>Review submitted!</div>;
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: "10px", background: "#1e293b", padding: 10, borderRadius: 8 }}>
+      <label>
+        Rating:
+        <select value={rating} onChange={e => setRating(Number(e.target.value))} style={{ marginLeft: 8 }}>
+          <option value={5}>⭐⭐⭐⭐⭐</option>
+          <option value={4}>⭐⭐⭐⭐</option>
+          <option value={3}>⭐⭐⭐</option>
+          <option value={2}>⭐⭐</option>
+          <option value={1}>⭐</option>
+        </select>
+      </label>
+      <br />
+      <textarea
+        value={comment}
+        onChange={e => setComment(e.target.value)}
+        placeholder="Write a comment..."
+        style={{ width: "100%", marginTop: "5px", borderRadius: 4, padding: 6 }}
+      />
+      <br />
+      <button type="submit" className="btn-primary" style={{ marginTop: "5px" }}>
+        Submit Review
+      </button>
+      {error && <div style={{ color: "#f87171", marginTop: 4 }}>{error}</div>}
+    </form>
+  );
+}
+
 const DashboardVendor = () => {
   const [filters, setFilters] = useState({
     rating: "",
@@ -802,26 +864,50 @@ const DashboardVendor = () => {
               <p style={{ color: "#b0b8c9" }}>No orders found.</p>
             ) : (
               <div>
-                {myGroups.map(order => (
-                  <div key={order._id} style={{ background: "#222", margin: "10px 0", padding: "15px", borderRadius: "8px" }}>
-                    <div><b>Items:</b> {order.items}</div>
-                    <div><b>Status:</b> {order.status}</div>
-                    <div><b>Deadline:</b> {new Date(order.deadline).toLocaleString()}</div>
-                    <div><b>Type:</b> {order.orderType}</div>
-                    {/* Add more fields as needed */}
-                  </div>
-                ))}
+                {myGroups.map(order => {
+                  // Find this user's quantity in participants
+                  let userQuantity = null;
+                  if (order.participants && currentUser) {
+                    const participant = order.participants.find(p => (p.userId._id || p.userId) === currentUser.id);
+                    userQuantity = participant ? participant.quantity : null;
+                  }
+                  return (
+                    <div key={order._id} style={{ background: "#222", margin: "10px 0", padding: "15px", borderRadius: "8px" }}>
+                      <div><b>Item:</b> {order.items}</div>
+                      <div><b>Quantity:</b> {userQuantity !== null ? userQuantity : "-"}</div>
+                      <div><b>Supplier:</b> {order.supplierId?.name || order.supplierId?.email || order.supplierId || "-"}</div>
+                      <div><b>Date:</b> {order.createdAt ? new Date(order.createdAt).toLocaleString() : (order.deadline ? new Date(order.deadline).toLocaleString() : "-")}</div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </section>
         );
       case "Reviews":
+        // Filter completed orders with a supplier
+        const completedOrdersWithSupplier = myGroups.filter(
+          order => order.status === "completed" && order.supplierId
+        );
+
         return (
           <section>
             <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Reviews & Ratings</h2>
-            <p style={{ color: "#b0b8c9", marginBottom: "10px" }}>Rate recently received orders</p>
-            <p>See average rating for suppliers you’ve used</p>
-            <p>Report issues (e.g. wrong item, late delivery)</p>
+            {completedOrdersWithSupplier.length === 0 ? (
+              <p style={{ color: "#b0b8c9" }}>No completed orders to review.</p>
+            ) : (
+              <div>
+                {completedOrdersWithSupplier.map(order => (
+                  <div key={order._id} style={{ background: "#222", margin: "10px 0", padding: "15px", borderRadius: "8px" }}>
+                    <div><b>Order:</b> {order.items}</div>
+                    <div><b>Supplier:</b> {order.supplierId.name || order.supplierId.email || order.supplierId}</div>
+                    <div><b>Completed on:</b> {new Date(order.updatedAt || order.deadline).toLocaleString()}</div>
+                    {/* Show review form */}
+                    <ReviewForm order={order} currentUser={currentUser} />
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         );
       case "Settings":
@@ -837,60 +923,58 @@ const DashboardVendor = () => {
   };
 
   return (
-    <div className="page-container">
-      <div className="dashboard-card">
-        <div style={{ display: "flex", gap: "20px", minHeight: "600px" }}>
-          <button 
-            onClick={toggleSidebar} 
-            className="btn-secondary"
-            style={{ marginBottom: "20px", alignSelf: "flex-start" }}
-          >
-        {sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
-      </button>
+    <div style={{ minHeight: '100vh', width: '100vw', background: 'radial-gradient(circle at 70% 20%, #1e90ff 0%, #0a1833 100%)', display: 'flex', alignItems: 'stretch', justifyContent: 'stretch', margin: 0, padding: 0, overflowX: 'hidden' }}>
+      <div style={{ width: '100vw', height: '100vh', background: '#101828', color: '#fff', boxSizing: 'border-box', padding: 0, minHeight: '100vh', display: 'flex', gap: 0, margin: 0, borderRadius: 0, boxShadow: 'none' }}>
+        <button 
+          onClick={toggleSidebar} 
+          className="btn-secondary"
+          style={{ marginBottom: "20px", alignSelf: "flex-start" }}
+        >
+      {sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+    </button>
 
-      {sidebarOpen && (
-            <nav className="sidebar" style={{ width: "250px", flexShrink: 0 }}>
-              <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
-            {["Overview", "Browse Suppliers", "Group Orders", "My Orders", "Reviews", "Settings"].map((tab) => (
-              <li
-                key={tab}
-                    className={`sidebar-item ${activeTab === tab ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab}
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
+    {sidebarOpen && (
+          <nav className="sidebar" style={{ width: "250px", flexShrink: 0 }}>
+            <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
+          {["Overview", "Browse Suppliers", "Group Orders", "My Orders", "Reviews", "Settings"].map((tab) => (
+            <li
+              key={tab}
+                  className={`sidebar-item ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </li>
+          ))}
+        </ul>
+      </nav>
+    )}
 
-          <main style={{ flexGrow: 1 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-              <h1 className="page-title" style={{ margin: 0 }}>Vendor Dashboard</h1>
-          {currentUser && (
-            <div style={{ textAlign: "right" }}>
-                  <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold", color: "#fff" }}>
-                Welcome, {currentUser.name || currentUser.email}!
-              </p>
-                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#b0b8c9" }}>
-                Role: {currentUser.role}
-              </p>
-              <button 
-                onClick={handleLogout}
-                    className="btn-secondary"
-                style={{ 
-                  marginTop: "0.5rem", 
-                      backgroundColor: "#dc3545"
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-        {renderMainPanel()}
-      </main>
-        </div>
+        <main style={{ flexGrow: 1 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+            <h1 className="page-title" style={{ margin: 0 }}>Vendor Dashboard</h1>
+        {currentUser && (
+          <div style={{ textAlign: "right" }}>
+                <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold", color: "#fff" }}>
+              Welcome, {currentUser.name || currentUser.email || "User"}!
+            </p>
+                <p style={{ margin: 0, fontSize: "0.9rem", color: "#b0b8c9" }}>
+              Role: {currentUser.role}
+            </p>
+            <button 
+              onClick={handleLogout}
+                  className="btn-secondary"
+              style={{ 
+                marginTop: "0.5rem", 
+                    backgroundColor: "#dc3545"
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        )}
+      </div>
+      {renderMainPanel()}
+    </main>
       </div>
     </div>
   );
