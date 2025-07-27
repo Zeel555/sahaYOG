@@ -245,13 +245,12 @@ const DashboardSupplier = () => {
       case "Dashboard":
         return (
           <section>
-            <h2 className="page-title" style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Dashboard Overview</h2>
-            <p style={{ color: "#b0b8c9", marginBottom: "20px" }}>Welcome message with supplier name</p>
+            <h2 className="page-title" style={{ fontSize: "2.5rem", marginBottom: "20px",color: "Blue" }}>Dashboard Overview</h2>
+            <p style={{ color: "#b0b8c9", marginBottom: "20px" }}></p>
             <ul style={{ color: "#e2e8f0", lineHeight: "1.6" }}>
-              <li>Total orders this week/month</li>
-              <li>Pending deliveries</li>
-              <li>Top-rated product</li>
-              <li>Revenue earned (optional)</li>
+              
+              <p style={{ fontSize: "1.8rem", fontWeight: "bold" }}>Every successful vendor starts with the right supplies. Let’s make it happen.   </p  >
+              
             </ul>
           </section>
         );
@@ -603,22 +602,8 @@ const DashboardSupplier = () => {
               <h1 className="page-title" style={{ margin: 0 }}>Supplier Dashboard</h1>
           {currentUser && (
             <div style={{ textAlign: "right" }}>
-                  <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold", color: "#fff" }}>
-                Welcome, {currentUser.name || currentUser.email}!
-              </p>
-                  <p style={{ margin: 0, fontSize: "0.9rem", color: "#b0b8c9" }}>
-                Role: {currentUser.role}
-              </p>
-              <button 
-                onClick={handleLogout}
-                    className="btn-secondary"
-                style={{ 
-                  marginTop: "0.5rem", 
-                      backgroundColor: "#dc3545"
-                }}
-              >
-                Logout
-              </button>
+                  
+              
             </div>
           )}
         </div>

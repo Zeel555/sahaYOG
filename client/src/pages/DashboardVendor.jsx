@@ -928,9 +928,9 @@ const DashboardVendor = () => {
         <button 
           onClick={toggleSidebar} 
           className="btn-secondary"
-          style={{ marginBottom: "20px", alignSelf: "flex-start" }}
+          style={{ marginBottom: "20px", alignSelf: "flex-start", marginTop : "10px"  }}
         >
-      {sidebarOpen ? "Close Sidebar" : "Open Sidebar"}
+      {sidebarOpen ? "<=" : "=>"}
     </button>
 
     {sidebarOpen && (
@@ -951,25 +951,11 @@ const DashboardVendor = () => {
 
         <main style={{ flexGrow: 1 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-            <h1 className="page-title" style={{ margin: 0 }}>Vendor Dashboard</h1>
+            <h1 className="page-title" style={{ margin: 0, padding : 20 }}>Vendor Dashboard</h1>
         {currentUser && (
           <div style={{ textAlign: "right" }}>
-                <p style={{ margin: 0, fontSize: "1.1rem", fontWeight: "bold", color: "#fff" }}>
-              Welcome, {currentUser.name || currentUser.email || "User"}!
-            </p>
-                <p style={{ margin: 0, fontSize: "0.9rem", color: "#b0b8c9" }}>
-              Role: {currentUser.role}
-            </p>
-            <button 
-              onClick={handleLogout}
-                  className="btn-secondary"
-              style={{ 
-                marginTop: "0.5rem", 
-                    backgroundColor: "#dc3545"
-              }}
-            >
-              Logout
-            </button>
+                
+
           </div>
         )}
       </div>

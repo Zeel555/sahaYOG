@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import DashboardSupplier from "./pages/DashboardSupplier";
@@ -19,6 +19,39 @@ import './App.css';
 import './styles/shared.css';
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Check for token in localStorage and parse user
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const base64Url = token.split(".")[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split("")
+            .map(function (c) {
+              return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+            })
+            .join("")
+        );
+        const userObj = JSON.parse(jsonPayload);
+        setUser(userObj);
+      } catch (error) {
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    window.location.href = '/login';
+  };
+
   return (
     <Router>
       <Routes>
@@ -42,7 +75,7 @@ function App() {
           path="/dashboard-vendor"
           element={
             <>
-              <Header />
+              <Header userName={user?.name || user?.email} onLogout={handleLogout} />
               <DashboardVendor />
               <Footer />
             </>
@@ -52,7 +85,7 @@ function App() {
           path="/dashboard-supplier"
           element={
             <>
-              <Header />
+              <Header userName={user?.name || user?.email} onLogout={handleLogout} />
               <DashboardSupplier />
               <Footer />
             </>
@@ -62,7 +95,7 @@ function App() {
           path="/group-orders"
           element={
             <>
-              <Header />
+              <Header userName={user?.name || user?.email} onLogout={handleLogout} />
               <GroupOrderPage />
               <Footer />
             </>
@@ -72,7 +105,7 @@ function App() {
           path="/suppliers"
           element={
             <>
-              <Header />
+              <Header userName={user?.name || user?.email} onLogout={handleLogout} />
               <SupplierListPage />
               <Footer />
             </>
@@ -82,7 +115,7 @@ function App() {
           path="/track-order"
           element={
             <>
-              <Header />
+              <Header userName={user?.name || user?.email} onLogout={handleLogout} />
               <OrderTrackingPage />
               <Footer />
             </>
@@ -92,7 +125,7 @@ function App() {
           path="/review"
           element={
             <>
-              <Header />
+              <Header userName={user?.name || user?.email} onLogout={handleLogout} />
               <ReviewPage />
               <Footer />
             </>
