@@ -1,0 +1,367 @@
+/* Body and HTML full height and width, with gradient background */
+body, html, #root {
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background: linear-gradient(120deg, #8ec5fc 0%, #6e8efb 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow-x: hidden;
+}
+
+/* Login background covering full viewport */
+.login-bg {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(120deg, #8ec5fc 0%, #6e8efb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Container for the login form */
+.login-container {
+  background: rgba(40, 54, 104, 0.55);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  box-shadow: 0 8px 40px 0 rgba(30,144,255,0.18);
+  width: 370px;
+  max-width: 95vw;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Logo styles within the login container */
+.login-logo {
+  margin-bottom: 1.5rem;
+  font-size: 1.7rem;
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+/* Icon styles within the logo */
+.login-logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* Title styles for the login section */
+.login-title {
+  color: #fff;
+  font-size: 1.2rem;
+  margin-bottom: 2.2rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Form styles within the login container */
+.login-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Label styles within the form */
+.login-form label {
+  color: #e0e0e0;
+  font-size: 1rem;
+  margin-bottom: 0.2rem;
+  font-weight: 500;
+}
+
+/* Input field styles within the form */
+.login-form input {
+  width: 100%;
+  padding: 0.7rem 0.5rem;
+  border: none;
+  border-bottom: 2px solid #b3b3b3;
+  background: transparent;
+  color: #fff;
+  font-size: 1.05rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+/* Focused input field styles */
+.login-form input:focus {
+  border-bottom: 2px solid #3b82f6;
+}
+
+/* Button styles within the form */
+.login-btn {
+  width: 100%;
+  padding: 0.85rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #3b82f6, #43e97b);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.3s, transform 0.2s;
+}
+
+/* Hover effects for the button */
+.login-btn:hover {
+  background: linear-gradient(90deg, #43e97b, #3b82f6);
+  transform: translateY(-2px);
+}
+
+/* Link styles within the login container */
+.login-links {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: #fff;
+  font-size: 0.97rem;
+  opacity: 0.85;
+}
+
+/* Individual link styles */
+.login-links a {
+  color: #fff;
+  text-decoration: underline;
+  margin: 0 0.5rem;
+  opacity: 0.9;
+  font-size: 0.97rem;
+}
+
+/* Media query for responsive design on smaller screens */
+@media (max-width: 500px) {
+  .login-container {
+    width: 98vw;
+    padding: 1.5rem 0.5rem 1.5rem 0.5rem;
+  }
+}
+
+/* Improved Register Form Styles */
+.register-container {
+  max-width: 450px; /* Slightly wider for better form layout */
+  margin: 4rem auto; /* More vertical space for prominence */
+  padding: 2.5rem 3rem; /* Increased padding for comfort */
+  border-radius: 16px; /* Softer, modern corners */
+  background: linear-gradient(145deg, #ffffff, #f8f9fa); /* Subtle gradient for depth */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05); /* Layered shadow for elevation */
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font stack */
+  transition: all 0.4s ease-in-out; /* Smoother transition */
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .register-container {
+    background: linear-gradient(145deg, #2a2a2e, #1e1e22);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Better spacing between elements */
+}
+
+.register-form label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #1a1a1a; /* Darker for better contrast */
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .register-form label {
+    color: #e0e0e0;
+  }
+}
+
+.register-form input,
+.register-form select {
+  margin-bottom: 0.5rem; /* Reduced to align with gap */
+  padding: 0.75rem 1rem; /* Slightly larger padding for comfort */
+  font-size: 1rem;
+  border: 1px solid #d1d5db; /* Softer gray for borders */
+  border-radius: 8px; /* Softer corners */
+  background-color: #f9fafb; /* Light background for inputs */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  .register-form input,
+  .register-form select {
+    border-color: #4b5563;
+    background-color: #374151;
+    color: #e5e7eb;
+  }
+}
+
+.register-form input:focus,
+.register-form select:focus {
+  border-color: #3b82f6; /* Brighter blue for focus */
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25); /* Larger, softer focus ring */
+  outline: none;
+  transform: translateY(-2px); /* Subtle lift on focus */
+}
+
+.register-form button {
+  padding: 0.85rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #3b82f6, #2563eb); /* Gradient button */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden; /* For ripple effect */
+}
+
+/* Ripple effect on click */
+.register-form button::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.6s linear;
+  top: 50%;
+  left: 50%;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.register-form button:hover {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.register-form button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .register-form button {
+    background: linear-gradient(90deg, #60a5fa, #3b82f6);
+  }
+  .register-form button:hover {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+  }
+}
+
+.error-msg {
+  color: #dc2626; /* Brighter red for visibility */
+  background-color: #fee2e2; /* Softer red background */
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  border-left: 4px solid #dc2626; /* Visual cue for errors */
+  animation: fadeIn 0.3s ease-in;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error-msg {
+    color: #f87171;
+    background-color: #450a0a;
+    border-left-color: #f87171;
+  }
+}
+
+/* Success message style */
+.success-msg {
+  color: #15803d;
+  background-color: #dcfce7;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  border-left: 4px solid #15803d;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@media (prefers-color-scheme: dark) {
+  .success-msg {
+    color: #86efac;
+    background-color: #14532d;
+    border-left-color: #86efac;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  .register-container {
+    max-width: 100%;
+    padding: 1.5rem 2rem;
+    margin: 1.5rem 1rem;
+    border-radius: 12px;
+  }
+
+  .register-form input,
+  .register-form select {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .register-form button {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* High-resolution screens */
+@media (min-resolution: 2dppx) {
+  .register-container {
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12), 0 6px 16px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .register-container,
+  .register-form input,
+  .register-form select,
+  .register-form button {
+    transition: none;
+  }
+  .register-form button::after {
+    animation: none;
+  }
+  .error-msg,
+  .success-msg {
+    animation: none;
+  }
+}

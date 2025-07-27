@@ -1,0 +1,36 @@
+.header {
+  width: 100%;
+  height: 80px; /* Increased height for better appearance */
+  background-color: #2f4f6f;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px; /* Increased padding for better spacing */
+  box-sizing: border-box;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 1000;
+}
+
+.header .logo {
+  font-size: 1.5rem;
+}
+
+.header .nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.header .nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.header .nav-links a:hover {
+  text-decoration: underline;
+}

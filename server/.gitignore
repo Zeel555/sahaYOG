@@ -1,0 +1,54 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# MongoDB dumps
+dump/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDEs & Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# React specific
+*.cache/
+.cache/
+*.local/
+*.env.production
+
+# Optional: coverage reports
+coverage/
+
+# Optional: misc
+*.tgz
+*.bak
+*.swp
+*.tmp
+
+# Optional: Firebase / Google service accounts
+serviceAccountKey.json
+firebase-debug.log
