@@ -5,7 +5,7 @@ const routes = require('./routes');
 const cors = require('cors');
 
 const app = express();
-const mongoURI = "mongodb+srv://nand13112004:FfR7IdOuEk4cEQrJ@cluster0.ly97jel.mongodb.net/myappdb?retryWrites=true&w=majority&appName=Cluster0";
+const mongoURI = process.env.MONGO_URI;
 console.log("🔗 Connecting to:", mongoURI);
 if (!mongoURI) {
   throw new Error('❌ MONGO_URI not found in .env!');
